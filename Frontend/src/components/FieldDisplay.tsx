@@ -1,7 +1,7 @@
 import { Box, Container, Grid, Paper, Typography } from "@mui/material";
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+// import { useParams } from "react-router-dom";
 import {
   AppButton,
   CheckboxGroup,
@@ -31,8 +31,8 @@ export interface FormData1 {
 
 type FormValue = string | boolean | string[] | File[] | null | undefined;
 
-const FieldDisplay = () => {
-  const { id } = useParams();
+const FieldDisplay = ({id}:{id:string}) => {
+  // const { id } = useParams();
   const [currentFormTemplate,setCurrentFormTemplate]=useState("")
   const [field, setField] = useState<selectedFieldInterface>({
     id: "",
@@ -128,7 +128,7 @@ const FieldDisplay = () => {
   return (
     <Box>
       <Container>
-        <Paper sx={{ height: "100vh" }} elevation={3} square={false}>
+        <Paper sx={{ height: "auto" }} elevation={3} square={false}>
           <Grid container spacing={2}>
             <Grid size={8}>
               <FieldTitle sx={{ textAlign: "center" }}>

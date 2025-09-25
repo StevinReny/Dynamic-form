@@ -8,6 +8,7 @@ import axios from "axios";
 import { socket } from "../socket/socket";
 import { AppButton } from "./IndividualComponent";
 import { useNavigate } from "react-router-dom";
+import CardsWorkFlow from "./CardsWorkFlow";
 
 
 
@@ -92,6 +93,9 @@ const DynamicForm = () => {
         <Formpart formData={formData} handleChange={handleChange} handleClick1={handleClick1} handleNameChange={handleNameChange} handleDelete={handleDelete}/>
       </Grid>
       </Grid>
+    </Box>
+    <Box>
+      <CardsWorkFlow/>
     </Box>
     </DndContext>
   );

@@ -1,10 +1,11 @@
 // import { Typography } from '@mui/material';
 import { FormControl, InputLabel, MenuItem, Select, } from '@mui/material';
-import type { SelectChangeEvent } from '@mui/material/Select';
+// import type { SelectChangeEvent } from '@mui/material/Select';
 import axios from 'axios'
 import { useEffect, useState, } from 'react'
 
-import { useNavigate } from 'react-router-dom';
+import FieldDisplay from './FieldDisplay';
+// import FieldDisplay from './FieldDisplay';
 // import React, { useEffect, useState } from 'react'
 
 
@@ -17,7 +18,7 @@ export interface FieldInterface{
 const LabelSpace = () => {
     const [selectedFieldId,setSelectedFieldId]=useState("");
     const [fields,setField]=useState([]);
-    const navigate=useNavigate()
+    // const navigate=useNavigate()
     // const [selectedField,setSelectedField]=useState<FieldInterface>()
     const getData=async()=>{
         const {data}=await axios.get("http://localhost:8080/getAll")
@@ -29,12 +30,12 @@ const LabelSpace = () => {
 
     }
 
-    const handleSelectField=(e:SelectChangeEvent)=>{
-      const id=e.target.value
-      setSelectedFieldId(id)
-      navigate(`/change/${id}`)
+    // const handleSelectField=(e:SelectChangeEvent)=>{
+    //   const id=e.target.value
+    //   setSelectedFieldId(id)
+    //   navigate(`/change/`)
       
-    }
+    // }
     useEffect(()=>{
         getData();
     },[])
@@ -44,7 +45,7 @@ const LabelSpace = () => {
     <div>
       <FormControl fullWidth>
           <InputLabel id="form-label">Select Form</InputLabel>
-          <Select labelId="form-label" value={selectedFieldId} onChange={handleSelectField}>
+          <Select labelId="form-label" value={selectedFieldId} onChange={(e)=>setSelectedFieldId(e.target.value)}>
       {fields.map((field:FieldInterface)=>(
         
             <MenuItem key={field.id} value={field.id}>{field.name}</MenuItem> 
@@ -53,7 +54,7 @@ const LabelSpace = () => {
        </Select>
         </FormControl>
         
-        {/* {selectedField && <FieldDisplay selectedField={selectedField}/>} */}
+        {selectedFieldId && <FieldDisplay id={selectedFieldId}/>}
     </div>
   )
 }

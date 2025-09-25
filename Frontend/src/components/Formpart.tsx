@@ -44,7 +44,7 @@ const Formpart = ({
             sx={{ mb: 2 }}
           />
           <Grid container spacing={2}>
-            <Grid size={8}>
+            <Grid size={6}>
           <Box
             minHeight={"200px"}
             ref={setNodeRef}
@@ -160,7 +160,7 @@ const Formpart = ({
             })}
           </Box>
           </Grid>
-          <Grid size={4}>
+          <Grid size={6}>
             <LabelSpace/>
           </Grid>
             </Grid>

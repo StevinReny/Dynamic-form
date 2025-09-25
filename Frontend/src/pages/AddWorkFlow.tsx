@@ -33,7 +33,8 @@ const AddWorkFlow = () => {
 
     const handleSubmit=async()=>{
         console.log(responseField)
-        // const response=await axios.post("http://localhost:8080/addWorkFlow")
+        const {data}=await axios.post("http://localhost:8080/addWorkFlow",responseField)
+        console.log(data)
         setResponseField({name:"",forms:[]})
         setAvailabelForm(currentForm)
     }
