@@ -1,103 +1,222 @@
-import { DndContext, type DragEndEvent } from "@dnd-kit/core";
-import { Box, Grid, } from "@mui/material";
-import {  useState } from "react";
-import PrebuiltButton from "./PrebuiltButton";
-import Formpart from "./Formpart";
-import { Dayjs } from "dayjs";
+import { Box, Container, Grid, Paper, Typography } from "@mui/material";
 import axios from "axios";
-import { socket } from "../socket/socket";
-import { AppButton } from "./IndividualComponent";
-import { useNavigate } from "react-router-dom";
-import CardsWorkFlow from "./CardsWorkFlow";
+import { useCallback, useEffect, useState } from "react";
+import {
+  AppButton,
+  CheckboxGroup,
+  FieldTitle,
+  FormTextField,
+  ReusableDatePicker,
+} from "./IndividualComponent";
+import type { Dayjs } from "dayjs";
 
+// meta info about the form template
+export interface FormMeta {
+  id: string;
+  name: string;
+  formfields: string; // stored as string in DB, needs JSON.parse
+}
 
+export interface FormData1 { name: string; fields: FormField[]; }
 
+// one field definition (schema)
+export interface FormField {
+  id: string;
+  type: string;
+  value: string | boolean | Dayjs | null;
+  label: string;
+  options?: string;
+}
 
-const DynamicForm = () => {
-  // const [selectedField, setSelectedField] = useState("");
-  const [fields, setFields] = useState<string[]>([]);
-  const [formData,setFormData]=useState({name:"",fields:[]as { id: string; type: string; value: string|boolean|Dayjs|null ,label:string,options?:string}[]})
-  const prebuild = ["text", "checkbox", "number","button","date","file"];
-  const navigate=useNavigate()
+// possible user input value types
+type FormValue = string | boolean | string[] | File[] | null | undefined;
 
+const DynamicForm = ({ id }: { id: string }) => {
+  const [currentTemplateId, setCurrentTemplateId] = useState("");
+  const [formMeta, setFormMeta] = useState<FormMeta>({
+    id: "",
+    name: "",
+    formfields: "[]",
+  });
 
-  const handleClick=(element:string)=>{
-    const field_key=`${element}_${formData.fields.length}`
-    // setSelectedField(element);
-    setFields([...fields,element])
-    setFormData({...formData,fields:[...formData.fields,{id:field_key,type:element,value:element==='checkbox'?false:"",label:""}]})
-    // setSelectedField("")
-    
-  }
+  // schema of fields
+  const [formSchema, setFormSchema] = useState<FormField[]>([]);
+  // actual user answers
+  const [formValues, setFormValues] = useState<{ [key: string]: FormValue }>({});
 
-  const handleDelete=(id:string)=>{
-    setFormData({...formData,fields:formData.fields.filter((element)=>
-    element.id!==id
-    )})
-  }
+  const fetchForm = useCallback(async () => {
+    const { data } = await axios.post(
+      `http://localhost:8080/getbyId`,
+      { id },
+      { withCredentials: true }
+    );
 
-  const handleNameChange=(value:string)=>{
-    setFormData({...formData,name:value})
-  }
-  const handleChange=(field_key:string,  property: "value"|"label"|"options",value:string|boolean|Dayjs|null)=>{
-    setFormData({...formData,fields:formData.fields.map((f)=>
-      f.id===field_key?{...f,[property]:value}:f
-    )})
-  }
+    setFormMeta(data.info);
 
-  const handleClick1=async(e:React.FormEvent)=>{
-    e.preventDefault()
-    try{
-      const payload={name:formData.name,fields:formData.fields}
-      const response=await axios.post("http://localhost:8080/insert",payload,{withCredentials:true })
+    const fields = JSON.parse(data.info.formfields);
+    setFormSchema(fields);
 
-      console.log(response.data)
-      socket.emit("sendNotification",{message:"Form created"})
-      console.log(formData)
-      setFormData({name:"",fields:[]})
-    }
-    catch(err:unknown){
-       if (err instanceof Error) {
-      console.log(err.message)
-    } else {
-      console.log('An unknown error occurred')
-    }
-    }
-    
-  }
-  const handleDrag=(event:DragEndEvent)=>{
-    const {active,over}=event
-    if(!over){
-      return 
-    }
-    if(over && over.id==='formArea' )
-    handleClick(String(active.id))
-  }
+    // initialize user answers
+    const initialValues: { [key: string]: FormValue } = {};
+    fields.forEach((element: FormField) => {
+      if (element.type === "checkbox") initialValues[element.id] = [];
+      else if (element.type === "file") initialValues[element.id] = [] as File[];
+      else initialValues[element.id] = "";
+    });
+    setFormValues(initialValues);
+  }, [id]);
+
+  const handleChange = (id: string, value: FormValue) => {
+    setFormValues((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    id: string
+  ) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    setFormValues((prev) => ({ ...prev, [id]: files }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formToSend = new FormData();
+    formToSend.append("templateId", currentTemplateId);
+
+    formSchema.forEach((field: FormField) => {
+      const value = formValues[field.id];
+
+      if (field.type === "checkbox") {
+        (value as string[]).forEach((val) => {
+          formToSend.append(field.id, val);
+        });
+      } else if (field.type === "file") {
+        (value as File[]).forEach((val) => {
+          formToSend.append(field.id, val);
+        });
+      } else {
+        formToSend.append(field.id, value as string);
+      }
+    });
+
+    const response = await axios.post(
+      "http://localhost:8080/responseFromTemplate",
+      formToSend,
+      { headers: { "Content-Type": "multipart/form-data" }, withCredentials: true }
+    );
+    console.log(response.data);
+
+    // reset inputs after submit
+    const resetValues: { [key: string]: FormValue } = {};
+    formSchema.forEach((element: FormField) => {
+      if (element.type === "checkbox") resetValues[element.id] = [];
+      else if (element.type === "file") resetValues[element.id] = [] as File[];
+      else resetValues[element.id] = "";
+    });
+    setFormValues(resetValues);
+  };
+
+  useEffect(() => {
+    fetchForm();
+    setCurrentTemplateId(id ?? "");
+  }, [id, fetchForm]);
 
   return (
-    <DndContext onDragEnd={handleDrag}>
     <Box>
-      <Box display={"flex"} justifyContent={"flex-end"}>
-        <AppButton onClick={()=>navigate("/addWorkFlow")}>Add workFlow</AppButton>
-      </Box>
-      <Grid container spacing={2}>
-        <Grid size={2}>
-      <Box display={"flex"} flexDirection={"column"} sx={{backgroundColor:"lightgrey", padding:2}} >
-
-        {prebuild.map((element,index) => (
-          <PrebuiltButton element={element} key={index} handleClick={handleClick} />
-        ))}
-      </Box>
-      </Grid>
-      <Grid size={8}>
-        <Formpart formData={formData} handleChange={handleChange} handleClick1={handleClick1} handleNameChange={handleNameChange} handleDelete={handleDelete}/>
-      </Grid>
-      </Grid>
+      <Container>
+        <Paper sx={{ height: "auto" }} elevation={3} square={false}>
+          <Grid container spacing={2}>
+            <Grid size={8}>
+              <FieldTitle sx={{ textAlign: "center" }}>
+                {formMeta?.name}
+              </FieldTitle>
+              {formSchema.map((f, index: number) => {
+                if (f.type === "text") {
+                  return (
+                    <FormTextField
+                      fullWidth
+                      key={f.id}
+                      label={f.label}
+                      onChange={(e) => handleChange(f.id, e.target.value)}
+                      placeholder={`Enter your ${f.label}`}
+                      value={formValues[f.id] as string | undefined}
+                    />
+                  );
+                } else if (f.type === "button") {
+                  return (
+                    <AppButton key={f.id} value={formValues[f.id] as string}>
+                      {f.label}
+                    </AppButton>
+                  );
+                } else if (f.type === "checkbox") {
+                  return (
+                    <Box key={index} sx={{ m: 2 }}>
+                      <CheckboxGroup
+                        label={f.label}
+                        value={formValues[f.id] as string[] | undefined}
+                        onChange={(value: string[]) =>
+                          handleChange(f.id, value)
+                        }
+                        options={f.options?.split(",") || []}
+                      />
+                    </Box>
+                  );
+                } else if (f.type === "number") {
+                  return (
+                    <FormTextField
+                      fullWidth
+                      key={f.id}
+                      onChange={(e) => handleChange(f.id, e.target.value)}
+                      label={f.label}
+                      placeholder={`Enter your ${f.label}`}
+                      value={formValues[f.id] as number | undefined}
+                      type="number"
+                    />
+                  );
+                } else if (f.type === "date") {
+                  return (
+                    <Box key={f.id} sx={{ m: 2 }}>
+                      <ReusableDatePicker
+                        value={formValues[f.id] as string | null}
+                        label={f.label}
+                        onChange={(value) => handleChange(f.id, value)}
+                      />
+                    </Box>
+                  );
+                } else if (f.type === "file") {
+                  return (
+                    <Box
+                      key={f.id}
+                      sx={{ m: 3 }}
+                      display={"flex"}
+                      alignItems={"center"}
+                    >
+                      <AppButton
+                        component="label"
+                        variant="contained"
+                        sx={{ m: 0 }}
+                      >
+                        {f.label}
+                        <input
+                          type="file"
+                          hidden
+                          onChange={(e) => handleFileChange(e, f.id)}
+                        />
+                      </AppButton>
+                      <Typography sx={{ ml: 2 }}>
+                        {(formValues[f.id] as File[])?.length} attached
+                      </Typography>
+                    </Box>
+                  );
+                }
+              })}
+            </Grid>
+          </Grid>
+          <AppButton onClick={handleSubmit}>Submit</AppButton>
+        </Paper>
+      </Container>
     </Box>
-    <Box>
-      <CardsWorkFlow/>
-    </Box>
-    </DndContext>
   );
 };
 

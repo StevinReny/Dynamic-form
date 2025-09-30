@@ -12,6 +12,8 @@ function App() {
     socket.on("sendNotification",(message)=>{
       toast.success(message)
     })
+
+    
     return () => {
     socket.off("sendNotification",);
   };

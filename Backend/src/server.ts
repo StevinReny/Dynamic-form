@@ -11,6 +11,9 @@ import { registerSocket } from "./socket/socket"
 import { addWorkFlowController } from "./controller/addWorkFlowController"
 import { getWorkFlowByIdController } from "./controller/getWorkFlowByIdController"
 import {  getAllWorkFlowController } from "./controller/getAllWorkFlow"
+import { getFormResponse } from "./controller/getFormResponse"
+import { getAllReponseOfWorkFlow } from "./controller/getAllResponseOfWorkFlow"
+import { getResponseFromWorkFlowRunId } from "./controller/getResponseFromWorkFlowRunId"
 
 
 const app=express()
@@ -33,6 +36,9 @@ app.post("/responseFromTemplate",uploadMultiple,addResponseFromTemplateControlle
 app.post("/addWorkFlow",addWorkFlowController);
 app.get("/getWorkFlowById/:id",getWorkFlowByIdController);
 app.get("/getAllWorkFlow",getAllWorkFlowController)
+app.get("/getFormResponse/:workFlowId/:templateId/:workFlowRunId",getFormResponse)
+app.get("/getAllResponseOfWorkFlow/:workFlowId",getAllReponseOfWorkFlow)
+app.get("/getResponseFromWorkFlowRunId/:wfrid",getResponseFromWorkFlowRunId)
 // app.post("/insert", (req, res) => {
 //   console.log("POST /insert body:", req.body);
 //   res.status(200).json({ message: "Success", received: req.body });

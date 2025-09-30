@@ -96,7 +96,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({ label, options, va
   }
 
   return (
-    <FormControl component="fieldset">
+    <FormControl component="fieldset" sx={{m:2}}>
       <FormLabel component="legend">{label}</FormLabel>
       <FormGroup>
         {options.map((option) => (
@@ -123,7 +123,7 @@ export const ReusableDatePicker:React.FC<ReusableDatePickerProps>=({
 })=>{
     return (
         
-        <DatePicker value={value?dayjs(value):null} sx={{color:"primary"}}label={label} onChange={(newValue:Dayjs|null)=>
+        <DatePicker value={value?dayjs(value):null} sx={{m:2,color:"primary"}}label={label} onChange={(newValue:Dayjs|null)=>
             onChange(newValue?newValue.format("YYYY-MM-DD"):"")
         }/>
     )

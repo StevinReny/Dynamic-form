@@ -6,10 +6,11 @@ import { error } from "console";
 export const getWorkFlowByIdController=async(req:Request,res:Response)=>{
     try{
         const id=req.params.id;
+        console.log("Entered")
         if(!id){
             return res.status(400).json({message:"No Id Provided"})
         }
-        const workflow=await WorkFlowRepo.findOne({where:{id},relations:{orders:{template:true}}})
+        const workflow=await WorkFlowRepo.findOne({where:{id},relations:{orders:{template:true}},order:{orders:{stepOrder:"asc"}}})
         if(!workflow){
             return res.status(404).json({message:"No WorkFlow Found"})
         }

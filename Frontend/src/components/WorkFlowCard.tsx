@@ -7,12 +7,20 @@ export interface WorkFlowProp{
     name:string
 }
 
-const WorkFlowCard = ({index,workflow}:{index:number,workflow:WorkFlowProp}) => {
+interface WorkFlowCardProps {
+  index: number;
+  workflow: WorkFlowProp;
+  navigateTo: (workflow: WorkFlowProp) => string; // function prop
+}
+
+
+
+const WorkFlowCard = ({index,workflow,navigateTo}:WorkFlowCardProps) => {
     const navigate=useNavigate()
   return (
     <Box>
         <Card sx={{background:"lightgrey",borderRadius:"10px",width:"250px", height:"100px"}} >
-            <CardActionArea onClick={()=>navigate(`/workflow/${workflow.id}`)} sx={{display:"flex",flexDirection:"column",height:"100%"}}>
+            <CardActionArea onClick={()=>navigate(navigateTo(workflow))} sx={{display:"flex",flexDirection:"column",height:"100%"}}>
                     <Typography variant='h4' sx={{color:"primary"}}>{workflow.name}</Typography>
                     <Typography variant='body1' sx={{color:'secondary'}}>{`Workflow ${index}`}</Typography>
             </CardActionArea>
