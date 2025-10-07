@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { FormResponse } from "../Entity/FormResponse";
-import { FormResponseRepo, FormTemplateRepo, WorkFlowRepo } from "../config/datasource";
+import { FormResponseRepo, FormTemplateRepo, TicketRepo, WorkFlowRepo } from "../config/datasource";
+import { Ticket } from "../Entity/Ticket";
 
 export const addResponseFromTemplateController=async(req:Request,res:Response)=>{
    try{
@@ -47,8 +48,17 @@ export const addResponseFromTemplateController=async(req:Request,res:Response)=>
         
     }
     const formResponse=new FormResponse()
+    let ticket_response;
     if(isCompleted==='true'){
         formResponse.isCompleted=true
+
+        const ticket=new Ticket()
+        ticket.ticket_number=`TICKET_${crypto.randomUUID()}`
+        ticket.workFlowRunId=workFlowRunId
+        ticket.subject=`${workFlow.name}_${ticket.ticket_number}`
+
+        ticket_response=await TicketRepo.save(ticket)
+
     }
     formResponse.template=template;
     formResponse.response=responseData;
@@ -56,7 +66,14 @@ export const addResponseFromTemplateController=async(req:Request,res:Response)=>
     formResponse.workFlow=workFlow
     formResponse.workFlowRunId=workFlowRunId
 
-    const resp=await FormResponseRepo.save(formResponse);
+
+
+    let resp=await FormResponseRepo.save(formResponse);
+    
+    if(ticket_response){
+        resp={...resp,...ticket_response}
+    }
+
 
   return res.status(200).json({ message: "Form saved successfully", info: resp });
    }

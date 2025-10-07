@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { AppButton, CheckboxGroup, FieldTitle, FormTextField, ReusableDatePicker } from "../components/IndividualComponent";
 import type { Dayjs } from "dayjs";
+import { toast } from "react-toastify";
 
 interface FormField {
   id: string;
@@ -156,10 +157,16 @@ useEffect(() => {
     });
 
     try {
-      await axios.post("http://localhost:8080/responseFromTemplate", formToSend, {
+      const resp=await axios.post("http://localhost:8080/responseFromTemplate", formToSend, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true
       });
+      if(formToSend.get("isCompleted")==='true'){
+
+        toast.success("TICKET GENERATED")
+        toast.warning(resp.data.info.ticket_number,{autoClose:8000})
+      }
+      console.log(resp.data)
       setCurrentIndex(prev => prev + 1);
     } catch (error) {
       console.error(error);

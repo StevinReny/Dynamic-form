@@ -41,11 +41,9 @@ const ResponseDetail = () => {
 
 
     const {data:data1,isLoading:isLoading1}=useQuery({
-        queryKey:['responsesWorkFlowRunId'],
+        queryKey:['responsesWorkFlowRunId',workFlowRunId],
         queryFn:()=>fetchResponses(workFlowRunId),
         enabled:workFlowRunId.length!==0,
-        
-
     })
 
 

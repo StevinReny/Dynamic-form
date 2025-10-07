@@ -8,6 +8,7 @@ import DetailedFormPage from "../pages/DetailedFormPage";
 import HomePage from "../components/Homepage";
 import ResponsePage from "../pages/ResponsePage";
 import ResponseDetail from "../pages/ResponseDetail";
+import AllTicket from "../components/AllTicket";
 
 export const router=createBrowserRouter(createRoutesFromElements(
     <Route path="/" element={<App/>}>
@@ -17,6 +18,7 @@ export const router=createBrowserRouter(createRoutesFromElements(
     <Route path="/workFlow/:wid" element={<DetailedFormPage/>}/>
     <Route path="/response" element={<ResponsePage/>}/>
     <Route path="/response/:id" element={<ResponseDetail/>}/>
+    <Route path="/tickets" element={<AllTicket/>}/>
     <Route path="/test" element={<Test/>}/>
     </Route>
 ))

@@ -79,6 +79,7 @@ const HomePage = () => {
       <Box display={"flex"} justifyContent={"flex-end"}>
         <AppButton onClick={()=>navigate("/addWorkFlow")}>Add workFlow</AppButton>
         <AppButton onClick={()=>navigate("/response")}>Responses</AppButton>
+        <AppButton onClick={()=>navigate("/tickets")}>Tickets</AppButton>
       </Box>
       <Grid container spacing={2}>
         <Grid size={2}>
