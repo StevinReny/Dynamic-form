@@ -18,6 +18,9 @@ import { getAllTicket } from "./controller/getAllTicket"
 import { RegisterController } from "./controller/Register"
 import {  LoginController } from "./controller/Login"
 import { authenticate } from "./middleware/authenticate"
+import Stripe from "stripe"
+import { addSubscriptionController } from "./controller/addSubcription"
+import { verifyPaymentController } from "./controller/verifyPaymentController"
 
 
 const app=express()
@@ -32,7 +35,12 @@ app.use(cors({
     origin:"http://localhost:5173",
     credentials:true,
 }))
+export const stripe=new Stripe(process.env.STRIPE_SECRET_KEY!)
 
+
+app.post("/login",LoginController)
+app.post("/register",RegisterController)
+app.use(authenticate)
 app.post("/insert",addFormTemplateController)
 app.get("/getAll",getAllForms)
 app.post("/getbyId",getFormByIdController)
@@ -44,8 +52,8 @@ app.get("/getFormResponse/:workFlowId/:templateId/:workFlowRunId",getFormRespons
 app.get("/getAllResponseOfWorkFlow/:workFlowId",getAllReponseOfWorkFlow)
 app.get("/getResponseFromWorkFlowRunId/:wfrid",getResponseFromWorkFlowRunId)
 app.get("/getAllTicket",getAllTicket)
-app.post("/register",RegisterController)
-app.post("/login",LoginController)
+app.post("/subscribe",addSubscriptionController)
+app.post("/verify-payment",verifyPaymentController)
 // app.post("/insert", (req, res) => {
 //   console.log("POST /insert body:", req.body);
 //   res.status(200).json({ message: "Success", received: req.body });
